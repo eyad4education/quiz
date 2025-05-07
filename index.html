@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Central Intégré</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for long content */
+            min-height: 100vh;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 850px; /* Max width for content */
+            background: #ffffff;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Index View Styles */
+        #index-view h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2em;
+            text-align: center;
+        }
+        #index-view ul {
+            list-style: none;
+            padding: 0;
+        }
+        #index-view li {
+            margin-bottom: 20px;
+        }
+        #index-view a {
+            text-decoration: none;
+            color: #ffffff;
+            background-color: #3498db;
+            font-size: 1.1em;
+            padding: 12px 25px;
+            border-radius: 6px;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+            display: block;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        #index-view a:hover {
+            background-color: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        /* Quiz View Styles */
+        #quiz-view h1 { /* This is #quiz-title-element */
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+        }
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .quiz-header button {
+            padding: 10px 18px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: background-color 0.2s ease;
+        }
+        #back-to-index {
+            background-color: #7f8c8d; /* Greyish color for back */
+        }
+        #back-to-index:hover {
+            background-color: #6c7a7d;
+        }
+        #uncheckAllBtn {
+            background-color: #e74c3c; /* Reddish color for reset */
+        }
+        #uncheckAllBtn:hover {
+            background-color: #c0392b;
+        }
+
+        .question-block {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .question-block h3 {
+            margin-top: 0;
+            color: #555;
+            font-size: 1.1em;
+        }
+        .options-list {
+            list-style: none;
+            padding: 0;
+        }
+        .options-list li {
+            margin-bottom: 10px;
+        }
+        .options-list label {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            border: 1px solid transparent;
+        }
+        .options-list input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        .correct {
+            background-color: #d4edda !important;
+            color: #155724 !important;
+            border-color: #c3e6cb !important;
+        }
+        .incorrect {
+            background-color: #f8d7da !important;
+            color: #721c24 !important;
+            border-color: #f5c6cb !important;
+        }
+        .options-list label:hover {
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <!-- Index View -->
+        <div id="index-view">
+            <h1>Navigation des Quiz</h1>
+            <ul>
+                <li><a href="#" data-quizid="p1">Quiz D1-P1: Organiser la recherche d'informations</a></li>
+                <li><a href="#" data-quizid="p2">Quiz D1-P2: Travailler dans un environnement numérique évolutif</a></li>
+                <li><a href="#" data-quizid="p3">Quiz D1-P3: Produire, traiter, exploiter des documents numériques</a></li>
+            </ul>
+        </div>
+
+        <!-- Quiz View (initially hidden) -->
+        <div id="quiz-view" style="display: none;">
+            <div class="quiz-header">
+                <button id="back-to-index">Retour à l'index</button>
+                <button id="uncheckAllBtn">Tout Décocher</button>
+            </div>
+            <h1 id="quiz-title-element"></h1>
+            <div id="quiz-content">
+                <!-- Questions will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- All Quiz Data ---
+        const allQuizData = {
+            'p1': [
+                {
+                    question: "Q1. Parmi ces types sources, lequel est le plus fiable ?",
+                    options: [
+                        { text: "R1: Les blogs", correct: false },
+                        { text: "R2: Les wikis", correct: false },
+                        { text: "R3: Les publications scientifiques", correct: true },
+                        { text: "R4: Les pages personnelles", correct: false }
+                    ]
+                },
+                {
+                    question: "Q2. Qu'est ce qui caractérise un annuaire de recherche",
+                    options: [
+                        { text: "R1: Contient des sites classés par thèmes", correct: true },
+                        { text: "R2: Contient l'ensemble des sites web existants", correct: false },
+                        { text: "R3: Contient uniquement des sites institutionnels", correct: false },
+                        { text: "R4: Contient des sites sélectionnés manuellement", correct: true }
+                    ]
+                },
+                {
+                    question: "Q3. Quelle est la requête permettant d'affirmer sans erreur possible que tous les sites parleront de mousse au chocolat ?",
+                    options: [
+                        { text: "R1: +mousse+au+chocolat", correct: false },
+                        { text: "R2: +mousse+chocolat", correct: false },
+                        { text: "R3: \"mousse au chocolat\"", correct: true },
+                        { text: "R4: \"mousse\"+ \"au\"+ \"chocolat\"", correct: false }
+                    ]
+                },
+                {
+                    question: "Q4. Quand on formule une requête dans un catalogue de bibliothèque, que peut-on faire ?",
+                    options: [
+                        { text: "R1: Rechercher en plein texte dans les documents référencés dans le catalogue", correct: false },
+                        { text: "R2: Combiner plusieurs critères de recherche (auteur, titre, etc)", correct: true },
+                        { text: "R3: Indiquer plusieurs mots clés par champ de recherche", correct: false },
+                        { text: "R4: Précise le type de publication (livres, périodiques, ressources numériques, etc..)", correct: false }
+                    ]
+                },
+                {
+                    question: "Q5. Dans une requête, quand utilise-t-on l'opérateur OR entre deux mots ?",
+                    options: [
+                        { text: "R1: Quand au moins l'un des deux mots doit être présent", correct: true },
+                        { text: "R2: Quand l'un des deux mots doit être présent mais pas les deux", correct: false },
+                        { text: "R3: Quand les deux mots doivent être présents", correct: false },
+                        { text: "R4: Quand aucun des deux mots ne doit être présent", correct: false }
+                    ]
+                },
+                {
+                    question: "Q6. Comment peut-on signifier dans une requête qu'un mot-clé doit être exclu des réponses ?",
+                    options: [
+                        { text: "R1: En mettant le mot clé entre crochets", correct: false },
+                        { text: "R2: En faisant précéder le mot clé du symbole + (plus)", correct: false },
+                        { text: "R3: En mettant le mot clé entre guillemets", correct: false },
+                        { text: "R4: En faisant précéder le mot clé du symbole -(moins)", correct: true }
+                    ]
+                },
+                {
+                    question: "Q7. Parmi les réponses suivantes, les quelles sont des encyclopédies en ligne ?",
+                    options: [
+                        { text: "R1: Wikipédia", correct: true },
+                        { text: "R2: Catalogue de la BNF", correct: false },
+                        { text: "R3: Universalise encyclopédia", correct: true }
+                    ]
+                },
+                {
+                    question: "Q8. Dans une requête, on peut combiner deux critères avec un opérateur. Quel opérateur donnera le plus grand nombre de résultats ?",
+                    options: [
+                        { text: "R1: ET", correct: false },
+                        { text: "R2: OU", correct: true },
+                        { text: "R3: SAUF", correct: false },
+                        { text: "R4: AVEC", correct: false }
+                    ]
+                },
+                {
+                    question: "Q9. Quelle requête donne le plus grand nombre de résultats ?",
+                    options: [
+                        { text: "R1: chien blanc", correct: true },
+                        { text: "R2: \"chien blanc\"", correct: false },
+                        { text: "R3: +chien +blanc", correct: false },
+                        { text: "R4: chien \"blanc ou noir\"", correct: false }
+                    ]
+                },
+                {
+                    question: "Q10. Quelle est la requête la plus précise pour rechercher les ressources contenant l'expression poisson rouge au singulier ou au pluriel ?",
+                    options: [
+                        { text: "R1: poisson rouge", correct: false },
+                        { text: "R2: poisson OR rouge", correct: false },
+                        { text: "R3: “poisson rouge” OR “poissons rouges”", correct: true }
+                    ]
+                },
+                {
+                    question: "Q11. Quels facteurs entrent en compte dans l'ordre des réponses d'un moteur de recherche sur le web ?",
+                    options: [
+                        { text: "R1: la réputation de l'auteur", correct: false },
+                        { text: "R2: la popularité de la page web", correct: true },
+                        { text: "R3: le nombre de mots de la page web", correct: false },
+                        { text: "R4: la correspondance avec les mots de la requête", correct: true }
+                    ]
+                },
+                {
+                    question: "Q12. Dans l'URL http://catalogue.bnf.fr/, quel est le nom de domaine ?",
+                    options: [
+                        { text: "R1: catalogue", correct: false },
+                        { text: "R2: bnf", correct: false },
+                        { text: "R3: fr", correct: false },
+                        { text: "R4: bnf.fr", correct: true }
+                    ]
+                },
+                {
+                    question: "Q13. Que peut-on dire de wikipédia ?",
+                    options: [
+                        { text: "R1: Toute information est contrôlée par un expert avant d'être publiée", correct: false },
+                        { text: "R2: tout internaute peut compléter un article", correct: true },
+                        { text: "R3: tout article peut être modifié à n'importe quel moment.", correct: true }
+                    ]
+                },
+                {
+                    question: "Q14. Quels critères servent à évaluer la qualité d'une information trouvée sur le web?",
+                    options: [
+                        { text: "R1: La fiabilité de la source", correct: true },
+                        { text: "R2: L'accès authentifié à la ressource", correct: false },
+                        { text: "R3: Le prix de la ressource", correct: false },
+                        { text: "R4: La réputation de l'auteur", correct: true }
+                    ]
+                },
+                {
+                    question: "Q15. Quelles sont les informations à indiquer quand on fait référence à une page web dans un rapport ?",
+                    options: [
+                        { text: "R1: L'URL", correct: true },
+                        { text: "R2: La date de consultation", correct: true },
+                        { text: "R3: Le propriétaire du nom de domaine", correct: false },
+                        { text: "R4: L'auteur", correct: true }
+                    ]
+                },
+                {
+                    question: "Q16. Qu'est-ce qu'une page web dynamique ?",
+                    options: [
+                        { text: "R1: Une page web que le webmestre modifie régulièrement", correct: false },
+                        { text: "R2: Une page web dont le contenu est générée à partir d'une base de données", correct: true },
+                        { text: "R3: Une page web faisant appel aux technologies d'animation graphique", correct: false },
+                        { text: "R4: Une page web incluant du son ou de la vidéo", correct: false }
+                    ]
+                },
+                {
+                    question: "Q17. Le navigateur web affiche « Erreur 404 ! Page non trouvée ». A quoi cela peut-il être dû ?",
+                    options: [
+                        { text: "R1: La page fait partie du web invisible", correct: false },
+                        { text: "R2: Le navigateur n'a pas été mis à jour", correct: false },
+                        { text: "R3: La page qui figurait à cette adresse a été supprimée.", correct: true },
+                        { text: "R4: L'adresse tapée dans le navigateur web est incorrecte", correct: true }
+                    ]
+                },
+                {
+                    question: "Q18. Que risque-t-on de perdre quand on enregistre une page web avec l'option « HTML seulement »",
+                    options: [
+                        { text: "R1: La mise en forme", correct: true },
+                        { text: "R2: Le texte", correct: false },
+                        { text: "R3: Les images", correct: true },
+                        { text: "R4: Les vidéos", correct: true },
+                        { text: "R5: Les hyperliens", correct: false }
+                    ]
+                },
+                {
+                    question: "Q19. Un annuaire :",
+                    options: [
+                        { text: "R1: fournit des résultats nombreux", correct: false },
+                        { text: "R2: fournit des résultats pertinents mais peu nombreux", correct: true },
+                        { text: "R3: est un logiciel qui a construit l'index de la totalité des pages du web", correct: false }
+                    ]
+                },
+                {
+                    question: "Q20. Parmi les avantages de l'utilisation d'un annuaire, on peut citer :",
+                    options: [
+                        { text: "R1: le nombre de résultats en réponse à une requête est énorme", correct: false },
+                        { text: "R2: la pertinence des résultats", correct: true },
+                        { text: "R3: la bonne tenue à jour des sites présentés", correct: false },
+                        { text: "R4: la taille de l'annuaire suit toujours la croissance du web", correct: false }
+                    ]
+                },
+                {
+                    question: "Q21. Lesquels de ces outils sont des outils de recherche d'informations ?",
+                    options: [
+                        { text: "R1: Les tableurs", correct: false },
+                        { text: "R2: Les moteurs de recherche", correct: true },
+                        { text: "R3: Les logiciels de traitement de texte", correct: false },
+                        { text: "R4 : Les bases de données", correct: true },
+                        { text: "R5 : Les catalogues de bibliothèques", correct: true }
+                    ]
+                },
+                {
+                    question: "Q22. Dans un annuaire ou un moteur de recherche « La recherche avancée » par mots clés :",
+                    options: [
+                        { text: "R1: permet de préciser plusieurs paramètres de la recherche", correct: true },
+                        { text: "R2: permet uniquement de faire une combinaison de mots-clés", correct: false },
+                        { text: "R3: permet uniquement de limiter la recherche à un site en utilisant la syntaxe : « site :domaine.com » dans le champ de recherche", correct: false }
+                    ]
+                },
+                {
+                    question: "Q23. Un catalogue :",
+                    options: [
+                        { text: "R1: permet de commander de la bibliothèque un ouvrage donné.", correct: false },
+                        { text: "R2: permet de savoir si la bibliothèque possède un ouvrage donné.", correct: false },
+                        { text: "R3: est la liste de tous les documents possédés par une ou plusieurs bibliothèques, quel que soit leur type : livre, thèse, revue,", correct: true }
+                    ]
+                }
+            ],
+            'p2': [
+                 {
+                    question: "Q1. Qu'est-ce que la définition d'un écran ?",
+                    options: [
+                        { text: "R1: Le nombre maximal de pixels que peut afficher l'écran", correct: true },
+                        { text: "R2: La capacité de la mémoire vidéo de la carte graphique", correct: false },
+                        { text: "R3: Le nombre maximal de couleurs qu'il peut afficher", correct: false },
+                        { text: "R4: La taille de la diagonale de l'écran", correct: false }
+                    ]
+                },
+                {
+                    question: "Q2. Que permet de faire un pare-feu ?",
+                    options: [
+                        { text: "R1: Gérer les licences d'utilisation des logiciels", correct: false },
+                        { text: "R2: Filtrer les flux de données émanant des serveurs distants conformément à une politique de sécurité", correct: true },
+                        { text: "R3: Protéger l'ordinateur contre les surtensions", correct: false },
+                        { text: "R4: Filtrer le contenu des messages électroniques selon leur expéditeur", correct: false }
+                    ]
+                },
+                {
+                    question: "Q3. Quelle est la taille, en bits, d'un mot de deux octets ?",
+                    options: [
+                        { text: "R1: 256 bits", correct: false },
+                        { text: "R2: 16 bits", correct: true },
+                        { text: "R3: 1 bit", correct: false },
+                        { text: "R4: 8 bits", correct: false }
+                    ]
+                },
+                {
+                    question: "Q4. Que peut –on dire de l'extension d'un fichier ?",
+                    options: [
+                        { text: "R1: Elle indique le type du fichier", correct: true },
+                        { text: "R2: Elle contient obligatoirement 3 caractères", correct: false },
+                        { text: "R3: Elle renseigne sur la taille du fichier", correct: false },
+                        { text: "R4: Elle renseigne sur le système d'exploitation utilisé", correct: false }
+                    ]
+                },
+                {
+                    question: "Q5. Quelle est la caractéristique d'un CD-RW ?",
+                    options: [
+                        { text: "R1: Il ne peut être effacé qu'une seule fois", correct: false },
+                        { text: "R2: Il peut être gravé plusieurs fois", correct: true },
+                        { text: "R3: Il peut être lu uniquement", correct: false },
+                        { text: "R4: Il ne peut être gravé qu'une seule fois", correct: false }
+                    ]
+                },
+                {
+                    question: "Q6. Comment appelle-t-on un progamme malveillant embarqué dans une application d'apparence anodine et installé à son insu par l'utilisateur ou l'administrateur lui-même ?",
+                    options: [
+                        { text: "R1: Un ver (Worm)", correct: false },
+                        { text: "R2: Un canular (hoax)", correct: false },
+                        { text: "R3: Un navigateur (Browser)", correct: false },
+                        { text: "R4: Un Cheval de troie (Trojan)", correct: true }
+                    ]
+                },
+                {
+                    question: "Q7. A quelle famille de logiciels appartiennent INTERNET EXPLORER et Mozilla Firefox ?",
+                    options: [
+                        { text: "R1: Des systèmes d'exploitation", correct: false },
+                        { text: "R2: Des navigateurs", correct: true },
+                        { text: "R3: Des éditeurs de texte << html >>", correct: false },
+                        { text: "R4: Des antivirus", correct: false }
+                    ]
+                },
+                {
+                    question: "Q8. De nos jours, quel est l'ordre de grandeur d'un disque dur ?",
+                    options: [
+                        { text: "R1: 500Ko", correct: false },
+                        { text: "R2: 500Go", correct: true },
+                        { text: "R3: 500To", correct: false },
+                        { text: "R4: 500Mo", correct: false }
+                    ]
+                },
+                {
+                    question: "Q9. Qu'est-ce qu'Internet ?",
+                    options: [
+                        { text: "R1: C'est un système d'exploitation", correct: false },
+                        { text: "R2: C'est un navigateur", correct: false },
+                        { text: "R3: C'est un moteur de recherche", correct: false },
+                        { text: "R4: C'est une toile de lien hypertexte", correct: true }
+                    ]
+                },
+                {
+                    question: "Q10. Que caractérise l'adresse IP ?",
+                    options: [
+                        { text: "R1: Le code secret pour administrer un ordinateur", correct: false },
+                        { text: "R2: Le numéro de série d'un ordinateur", correct: false },
+                        { text: "R3: Le débit d'une connexion à Internet", correct: false },
+                        { text: "R4: L'adresse d'un ordinateur connecté au réseau", correct: true }
+                    ]
+                },
+                {
+                    question: "Q11. Quel est le protocole qui permet à des ordinateurs de communiquer entre eux sur Internet ?",
+                    options: [
+                        { text: "R1: RTC", correct: false },
+                        { text: "R2: TCP/IP", correct: true },
+                        { text: "R3: PHP", correct: false },
+                        { text: "R4: XML", correct: false }
+                    ]
+                },
+                {
+                    question: "Q11 (bis). Comment peut-on se connecter au réseau Internet ?",
+                    options: [
+                        { text: "R1: En utilisant un réseau câblé de type Ethernet", correct: true },
+                        { text: "R2: En utilisant un réseau sécurisé de type Web", correct: false },
+                        { text: "R3: En utilisant un réseau sans fil de type WiFi", correct: true },
+                        { text: "R4: En utilisant un réseau téléphonique de type 3G", correct: true }
+                    ]
+                },
+                {
+                    question: "Q12. Qu'est-ce que HTTP ?",
+                    options: [
+                        { text: "R1: Un système d'exploitation", correct: false },
+                        { text: "R2: Un protocole de communication réseau", correct: true },
+                        { text: "R3: Un langage de programmation pour les pages web", correct: false },
+                        { text: "R4: Un logiciel de navigation", correct: false }
+                    ]
+                },
+                {
+                    question: "Q13. Comment s'appelle l'opération permettant de réduire le poids d'un fichier ?",
+                    options: [
+                        { text: "R1: Le cryptage", correct: false },
+                        { text: "R2: L'empaquetage", correct: false },
+                        { text: "R3: La fusion", correct: false },
+                        { text: "R4: La compression", correct: true }
+                    ]
+                },
+                {
+                    question: "Q14. Que peut-on dire de la mémoire vive d'un ordinateur ?",
+                    options: [
+                        { text: "R1: C'est une mémoire de stockage", correct: false },
+                        { text: "R2: C'est une mémoire de travail pour les applications en cours d'éxecution", correct: true },
+                        { text: "R3: C'est une mémoire délocalisé", correct: false },
+                        { text: "R4: C'est une mémoire volatile", correct: true }
+                    ]
+                },
+                {
+                    question: "Q15. Quelles informations peut-on déduire de l'extension d'un fichier?",
+                    options: [
+                        { text: "R1: L'auteur du fichier", correct: false },
+                        { text: "R2: Le format du fichier", correct: true },
+                        { text: "R3: La date de création du fichier", correct: false },
+                        { text: "R4: Les applications qui peuvent l'ouvrir", correct: true }
+                    ]
+                },
+                {
+                    question: "Q16. Quel élément détermine la rapidité de calcul et de traitement d'un ordinateur ?",
+                    options: [
+                        { text: "R1: La capacité de stockage", correct: false },
+                        { text: "R2: La fréquence de rafraîchissement", correct: false },
+                        { text: "R3: La qualité de la ventilation", correct: false },
+                        { text: "R4: Le processeur", correct: true }
+                    ]
+                },
+                {
+                    question: "Q17. Lorsque le contenu d'un document est confidentiel, qu'est-il conseiller de faire pour éviter toute indiscrétion ?",
+                    options: [
+                        { text: "R1: Mettre le fichier en lecture seul", correct: false },
+                        { text: "R2: Protéger le fichier en écriture par un mot de passe", correct: true },
+                        { text: "R3: Protéger le fichier en lecture par un mot de passe", correct: true },
+                        { text: "R4: Convertir le fichier au format PDF", correct: false }
+                    ]
+                },
+                {
+                    question: "Q18. Qu'est-ce qu'un cookie ?",
+                    options: [
+                        { text: "R1: Un fichier placé sur l'ordinateur d'un internaute qui navigue sur le Web", correct: true },
+                        { text: "R2: Un type de virus particulier à certains navigateurs Web", correct: false },
+                        { text: "R3: Une fenêtre publicitaire qui apparaît lorsqu'on navigue sur le Web", correct: false },
+                        { text: "R4: Un bug d'un programme qui s'exécute sur un serveur Web", correct: false }
+                    ]
+                },
+                {
+                    question: "Q19. Que peut-on faire pour éviter de modifier par inadvertance un fichier terminé ?",
+                    options: [
+                        { text: "R1: Le compresser", correct: false },
+                        { text: "R2: Changer son extension", correct: false },
+                        { text: "R3: Le mettre en lecture seul", correct: true },
+                        { text: "R4: Fixer sa taille", correct: false }
+                    ]
+                },
+                {
+                    question: "Q20. Qu'est-ce qu'un Cheval de Troie",
+                    options: [
+                        { text: "R1: C'est un virus qui se propage d'un ordinateur à l'autre", correct: false },
+                        { text: "R2: C'est une application qui dissimule un logiciel malveillant", correct: true },
+                        { text: "R3: C'est un matériel qui permet de se connecter à une passerelle", correct: false },
+                        { text: "R4: C'est une protection contre les intrusions de pirates informatiques", correct: false }
+                    ]
+                },
+                {
+                    question: "Q21. Quelles précautions peut-on prendre pour protéger son ordinateur",
+                    options: [
+                        { text: "R1: Activer et configurer son pare-feu", correct: true },
+                        { text: "R2: Chiffrer ses courriels", correct: false },
+                        { text: "R3: éviter de se connecter en haut débit", correct: false },
+                        { text: "R4: Installer et maintenir à jour un anti-virus", correct: true }
+                    ]
+                },
+                {
+                    question: "Q22. Que peut-on dire de HTML ?",
+                    options: [
+                        { text: "R1: C'est un langage à balises permettant de composer des pages web", correct: true },
+                        { text: "R2: C'est un format de document ouvert", correct: true },
+                        { text: "R3:C'est une archive de fichiers XML", correct: false },
+                        { text: "R4: C'est un protocole de communication sur Internet", correct: false }
+                    ]
+                },
+                {
+                    question: "Q23. Que peut-on dire d'une image vectorielle ?",
+                    options: [
+                        { text: "R1 : Elle peut être agrandi sans effet de pixellisation", correct: true },
+                        { text: "R2 : Elle est définie par un ensemble de pixels vectoriels", correct: false },
+                        { text: "R3 : Elle est définie par la description de ce qu'elle contient d'un point de vue géométrique", correct: false },
+                        { text: "R4 : Elle ne permet de définir que des images de petite taille", correct: false }
+                    ]
+                }
+            ],
+            'p3': [
+                {
+                    question: "Q1: La formule =A$1+C1, stockée en D3, est recopiée en D4. D4 contient la formule :",
+                    options: [
+                        { text: "A1+C1", correct: false },
+                        { text: "A$1+C1", correct: false },
+                        { text: "A$1+C2", correct: true },
+                        { text: "A$2+C2", correct: false }
+                    ]
+                },
+                {
+                    question: "Q2: La formule =$C$3*D2 est localisée dans la cellule B2. Si on la copie et on la colle dans la cellule A1, quelle sera la nouvelle formule :",
+                    options: [
+                        { text: "=$C3*C1", correct: true },
+                        { text: "=C3*C2", correct: false },
+                        { text: "=$C$3*E3", correct: false },
+                        { text: "Message d'erreur", correct: false }
+                    ]
+                },
+                {
+                    question: "Q3: La formule =NB.SI(C5 :C21 ; ‘oui') est stockée en C1. La plage C5 :C21 contient oui, non ou abstention, un certain nombre de fois. Notre formule permet de :",
+                    options: [
+                        { text: "Sommer les ‘oui'.", correct: false },
+                        { text: "Compter le nombre de ‘oui'", correct: true },
+                        { text: "Elle produit une erreur.", correct: false }
+                    ]
+                },
+                {
+                    question: "Q4:Dans la cellule C4 se trouve la formule =A2*B3. Que deviendra cette formule lorsqu'elle sera recopiée en D5 ?",
+                    options: [
+                        { text: "=B3*C4", correct: true },
+                        { text: "=B2*C4", correct: false },
+                        { text: "=A2*B3", correct: false },
+                        { text: "=A3*B4", correct: false }
+                    ]
+                },
+                {
+                    question: "Q5: Excel est un:",
+                    options: [
+                        { text: "traitement de texte", correct: false },
+                        { text: "tableur", correct: true },
+                        { text: "compilateur", correct: false }
+                    ]
+                },
+                {
+                    question: "Q6: Par défaut, Excel 2010 crée des fichiers dont l'extension est:",
+                    options: [
+                        { text: "HTML", correct: false },
+                        { text: "DOC", correct: false },
+                        { text: "XLSX", correct: true }
+                    ]
+                },
+                {
+                    question: "Q7: Dans une feuille de calcul Excel, les données sont stockées dans",
+                    options: [
+                        { text: "une variable", correct: false },
+                        { text: "une cellule", correct: true }
+                    ]
+                },
+                {
+                    question: "Q8: Si j'encode le mot bonjour et si j'appuie sur Enter, Excel interprétera bonjour comme",
+                    options: [
+                        { text: "une formule", correct: false },
+                        { text: "une constante numérique", correct: false },
+                        { text: "une constante textuelle", correct: true }
+                    ]
+                },
+                {
+                    question: "Q9: L'utilisateur encode =3*4 dans la cellule A1. Quelle sera la valeur stockée A1 ?",
+                    options: [
+                        { text: "7", correct: false },
+                        { text: "12", correct: true },
+                        { text: "3*4", correct: false }
+                    ]
+                },
+                {
+                    question: "Q10: Un utilisateur a encodé =somme(A1;1C;B12) dans la cellule C10. Cette écriture est",
+                    options: [
+                        { text: "Correcte", correct: false },
+                        { text: "non correcte", correct: true }
+                    ]
+                },
+                {
+                    question: "Q11: Sachant que la cellule A1 contient la valeur 50, la formule =si(A1<>50;\"ok\";\"ko\") renvoie",
+                    options: [
+                        { text: "0", correct: false },
+                        { text: "Ok", correct: false },
+                        { text: "ko", correct: true }
+                    ]
+                },
+                {
+                    question: "Q12 : L'écriture =B32 signifie :",
+                    options: [
+                        { text: "récupérer le contenu de la cellule B32", correct: true },
+                        { text: "multiplier la cellule B3 par 2", correct: false },
+                        { text: "écrire B32 dans la cellule", correct: false }
+                    ]
+                },
+                {
+                    question: "Q13: L'écriture =si(et(A1;B2);1000;1500) écrit 1000 dans la cellule si",
+                    options: [
+                        { text: "A1 et B2 valent FAUX", correct: false },
+                        { text: "A1 vaut FAUX et B2 vaut VRAI", correct: true }
+                    ]
+                }
+            ]
+        };
+
+        // --- DOM Elements ---
+        const indexViewElement = document.getElementById('index-view');
+        const quizViewElement = document.getElementById('quiz-view');
+        const quizTitleElement = document.getElementById('quiz-title-element');
+        const quizContentElement = document.getElementById('quiz-content');
+        const uncheckAllButton = document.getElementById('uncheckAllBtn');
+        const backToIndexButton = document.getElementById('back-to-index');
+
+        let currentQuizId = null;
+
+        // --- Cookie Helper Functions ---
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        function eraseCookie(name) {
+            document.cookie = name + '=; Max-Age=-99999999; path=/; SameSite=Lax';
+        }
+
+        // --- Quiz Logic ---
+        function applyStyling(checkbox, label) {
+            label.classList.remove('correct', 'incorrect');
+            if (checkbox.checked) {
+                if (checkbox.dataset.correct === 'true') {
+                    label.classList.add('correct');
+                } else {
+                    label.classList.add('incorrect');
+                }
+            }
+        }
+
+        function saveAnswers(quizIdToSave) {
+            if (!quizIdToSave || !allQuizData[quizIdToSave]) return;
+            const answers = {};
+            const currentQuizSpecificData = allQuizData[quizIdToSave];
+
+            currentQuizSpecificData.forEach((q, qIndex) => {
+                q.options.forEach((opt, oIndex) => {
+                    const checkboxId = `${quizIdToSave}_q${qIndex}_opt${oIndex}`;
+                    const checkbox = document.getElementById(checkboxId);
+                    if (checkbox && checkbox.checked) {
+                        answers[checkboxId] = true;
+                    }
+                });
+            });
+            const cookieName = `quiz_${quizIdToSave}_answers`;
+            setCookie(cookieName, JSON.stringify(answers), 7); // Save for 7 days
+        }
+
+        function loadAnswers(quizIdToLoad) {
+            if (!quizIdToLoad || !allQuizData[quizIdToLoad]) return;
+            const cookieName = `quiz_${quizIdToLoad}_answers`;
+            const savedAnswersCookie = getCookie(cookieName);
+            const currentQuizSpecificData = allQuizData[quizIdToLoad];
+
+            if (savedAnswersCookie) {
+                try {
+                    const savedAnswers = JSON.parse(savedAnswersCookie);
+                    currentQuizSpecificData.forEach((q, qIndex) => {
+                        q.options.forEach((opt, oIndex) => {
+                            const checkboxId = `${quizIdToLoad}_q${qIndex}_opt${oIndex}`;
+                            const checkbox = document.getElementById(checkboxId);
+                            const label = checkbox ? checkbox.closest('label') : null;
+
+                            if (checkbox && savedAnswers[checkboxId]) {
+                                checkbox.checked = true;
+                                if (label) applyStyling(checkbox, label);
+                            }
+                        });
+                    });
+                } catch (e) {
+                    console.error("Error parsing cookies:", e);
+                    eraseCookie(cookieName); // Clear corrupted cookie
+                }
+            }
+        }
+
+        function buildQuiz(quizId) {
+            quizContentElement.innerHTML = ''; // Clear previous quiz content
+            const quizData = allQuizData[quizId];
+            if (!quizData) {
+                quizContentElement.innerHTML = '<p>Quiz non trouvé.</p>';
+                return;
+            }
+
+            quizData.forEach((q, qIndex) => {
+                const questionBlock = document.createElement('div');
+                questionBlock.classList.add('question-block');
+
+                const questionTitle = document.createElement('h3');
+                questionTitle.textContent = q.question;
+                questionBlock.appendChild(questionTitle);
+
+                const optionsList = document.createElement('ul');
+                optionsList.classList.add('options-list');
+
+                q.options.forEach((opt, oIndex) => {
+                    const listItem = document.createElement('li');
+                    const label = document.createElement('label');
+                    const checkbox = document.createElement('input');
+                    
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `${quizId}_q${qIndex}_opt${oIndex}`;
+                    checkbox.name = `${quizId}_question-${qIndex}`;
+                    checkbox.value = oIndex;
+                    checkbox.dataset.correct = opt.correct;
+
+                    checkbox.addEventListener('change', function() {
+                        applyStyling(this, label);
+                        saveAnswers(currentQuizId); // Save on every change for the current quiz
+                    });
+
+                    label.appendChild(checkbox);
+                    label.appendChild(document.createTextNode(" " + opt.text));
+                    listItem.appendChild(label);
+                    optionsList.appendChild(listItem);
+                });
+
+                questionBlock.appendChild(optionsList);
+                quizContentElement.appendChild(questionBlock);
+            });
+        }
+
+        // --- View Navigation ---
+        function showIndexView() {
+            indexViewElement.style.display = 'block';
+            quizViewElement.style.display = 'none';
+            currentQuizId = null;
+            window.scrollTo(0, 0); // Scroll to top
+        }
+
+        function showQuizView(quizId) {
+            currentQuizId = quizId;
+            indexViewElement.style.display = 'none';
+            quizViewElement.style.display = 'block';
+
+            const quizMeta = {
+                'p1': "D1-P1: Organiser la recherche d'informations",
+                'p2': "D1-P2: Travailler dans un environnement numérique évolutif",
+                'p3': "D1-P3: Produire, traiter, exploiter des documents numériques"
+            };
+            quizTitleElement.textContent = quizMeta[quizId] || "Quiz";
+            
+            buildQuiz(quizId);
+            loadAnswers(quizId);
+            window.scrollTo(0, 0); // Scroll to top
+        }
+
+        // --- Event Listeners ---
+        document.querySelectorAll('#index-view a[data-quizid]').forEach(link => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                const quizId = event.currentTarget.dataset.quizid;
+                showQuizView(quizId);
+            });
+        });
+
+        backToIndexButton.addEventListener('click', showIndexView);
+
+        uncheckAllButton.addEventListener('click', () => {
+            if (currentQuizId) {
+                const checkboxes = quizContentElement.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                    const label = checkbox.closest('label');
+                    if (label) {
+                        label.classList.remove('correct', 'incorrect');
+                    }
+                });
+                eraseCookie(`quiz_${currentQuizId}_answers`);
+            }
+        });
+
+        // --- Initial State ---
+        showIndexView(); // Start by showing the index
+
+    </script>
+</body>
+</html>
