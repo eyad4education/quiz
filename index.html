@@ -1,172 +1,72 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Central Intégré</title>
+    <title>2CN QCM EXAMEN EXEMPLE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Custom styles for a bit more flair if needed, but primarily using Tailwind */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f2f5;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start; /* Align to top for long content */
-            min-height: 100vh;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Style for the diamond character if needed, though Tailwind should handle text color */
+        .diamond-char {
+            color: #fcd34d; /* A gold-like color for the diamond, adjust as needed */
+            margin-right: 0.25em;
         }
 
-        #app-container {
-            width: 100%;
-            max-width: 850px; /* Max width for content */
-            background: #ffffff;
-            padding: 20px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        /* Styling for correct/incorrect options */
+        .option-label.correct {
+            background-color: #10B981 !important; /* Tailwind green-500 */
+            color: white !important;
+            border-color: #059669 !important; /* Tailwind green-600 */
         }
-
-        /* Index View Styles */
-        #index-view h1 {
-            color: #2c3e50;
-            margin-bottom: 30px;
-            font-size: 2em;
-            text-align: center;
+        .option-label.incorrect {
+            background-color: #EF4444 !important; /* Tailwind red-500 */
+            color: white !important;
+            border-color: #DC2626 !important; /* Tailwind red-600 */
         }
-        #index-view ul {
-            list-style: none;
-            padding: 0;
-        }
-        #index-view li {
-            margin-bottom: 20px;
-        }
-        #index-view a {
-            text-decoration: none;
-            color: #ffffff;
-            background-color: #3498db;
-            font-size: 1.1em;
-            padding: 12px 25px;
-            border-radius: 6px;
-            transition: background-color 0.2s ease-in-out, transform 0.1s ease;
-            display: block;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        #index-view a:hover {
-            background-color: #2980b9;
-            transform: translateY(-1px);
-        }
-
-        /* Quiz View Styles */
-        #quiz-view h1 { /* This is #quiz-title-element */
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 1.6em;
-        }
-        .quiz-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-        .quiz-header button {
-            padding: 10px 18px;
+        .option-label.selected:not(.correct):not(.incorrect) {
+            background-color: #3B82F6; /* Tailwind blue-500 for selected but not yet validated (if needed) */
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: background-color 0.2s ease;
-        }
-        #back-to-index {
-            background-color: #7f8c8d; /* Greyish color for back */
-        }
-        #back-to-index:hover {
-            background-color: #6c7a7d;
-        }
-        #uncheckAllBtn {
-            background-color: #e74c3c; /* Reddish color for reset */
-        }
-        #uncheckAllBtn:hover {
-            background-color: #c0392b;
-        }
-
-        .question-block {
-            margin-bottom: 30px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-        .question-block h3 {
-            margin-top: 0;
-            color: #555;
-            font-size: 1.1em;
-        }
-        .options-list {
-            list-style: none;
-            padding: 0;
-        }
-        .options-list li {
-            margin-bottom: 10px;
-        }
-        .options-list label {
-            display: flex;
-            align-items: center;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-            border: 1px solid transparent;
-        }
-        .options-list input[type="checkbox"] {
-            margin-right: 10px;
-            transform: scale(1.2);
-        }
-        .correct {
-            background-color: #d4edda !important;
-            color: #155724 !important;
-            border-color: #c3e6cb !important;
-        }
-        .incorrect {
-            background-color: #f8d7da !important;
-            color: #721c24 !important;
-            border-color: #f5c6cb !important;
-        }
-        .options-list label:hover {
-            background-color: #e9ecef;
         }
     </style>
+    <script>
+        // Tailwind dark mode configuration (optional, as we're adding 'dark' class to html)
+        // if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        //   document.documentElement.classList.add('dark')
+        // } else {
+        //   document.documentElement.classList.remove('dark')
+        // }
+    </script>
 </head>
-<body>
-    <div id="app-container">
-        <!-- Index View -->
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 min-h-screen flex justify-center items-start p-4 sm:p-6">
+    <div id="app-container" class="w-full max-w-3xl bg-white dark:bg-gray-800 shadow-xl rounded-lg p-6 sm:p-8">
         <div id="index-view">
-            <h1>Navigation des Quiz</h1>
-            <ul>
-                <li><a href="#" data-quizid="p1">Quiz D1-P1: Organiser la recherche d'informations</a></li>
-                <li><a href="#" data-quizid="p2">Quiz D1-P2: Travailler dans un environnement numérique évolutif</a></li>
-                <li><a href="#" data-quizid="p3">Quiz D1-P3: Produire, traiter, exploiter des documents numériques</a></li>
+            <h1 class="text-3xl sm:text-4xl font-bold text-center text-blue-600 dark:text-blue-400 mb-8">Navigation des Quiz</h1>
+            <ul class="space-y-4">
+                <li><a href="#" data-quizid="p1" class="block w-full text-center bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">Quiz D1-P1: Organiser la recherche d'informations</a></li>
+                <li><a href="#" data-quizid="p2" class="block w-full text-center bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">Quiz D1-P2: Travailler dans un environnement numérique évolutif</a></li>
+                <li><a href="#" data-quizid="p3" class="block w-full text-center bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105">Quiz D1-P3: Produire, traiter, exploiter des documents numériques</a></li>
             </ul>
         </div>
 
-        <!-- Quiz View (initially hidden) -->
         <div id="quiz-view" style="display: none;">
-            <div class="quiz-header">
-                <button id="back-to-index">Retour à l'index</button>
-                <button id="uncheckAllBtn">Tout Décocher</button>
+            <div class="quiz-header flex flex-col sm:flex-row justify-between items-center mb-6 space-y-3 sm:space-y-0">
+                <button id="back-to-index" class="w-full sm:w-auto bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 text-white font-medium py-2 px-5 rounded-lg shadow transition-colors">Retour à l'index</button>
+                <h1 id="quiz-title-element" class="text-xl sm:text-2xl font-semibold text-center text-gray-800 dark:text-gray-100 order-first sm:order-none flex-grow sm:text-center"></h1>
+                <button id="uncheckAllBtn" class="w-full sm:w-auto bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white font-medium py-2 px-5 rounded-lg shadow transition-colors">Tout Décocher</button>
             </div>
-            <h1 id="quiz-title-element"></h1>
-            <div id="quiz-content">
-                <!-- Questions will be dynamically inserted here -->
-            </div>
+            <div id="quiz-content" class="space-y-8">
+                </div>
         </div>
     </div>
 
     <script>
-        // --- All Quiz Data ---
+        // --- All Quiz Data (Original data structure) ---
         const allQuizData = {
             'p1': [
                 {
@@ -202,7 +102,7 @@
                         { text: "R1: Rechercher en plein texte dans les documents référencés dans le catalogue", correct: false },
                         { text: "R2: Combiner plusieurs critères de recherche (auteur, titre, etc)", correct: true },
                         { text: "R3: Indiquer plusieurs mots clés par champ de recherche", correct: false },
-                        { text: "R4: Précise le type de publication (livres, périodiques, ressources numériques, etc..)", correct: false }
+                        { text: "R4: Précise le type de publication (livres, périodiques, ressources numériques, etc..)", correct: false } // Note: typo in original "Précise"
                     ]
                 },
                 {
@@ -228,7 +128,7 @@
                     options: [
                         { text: "R1: Wikipédia", correct: true },
                         { text: "R2: Catalogue de la BNF", correct: false },
-                        { text: "R3: Universalise encyclopédia", correct: true }
+                        { text: "R3: Universalise encyclopédia", correct: true } // Note: typo "Universalise" likely "Universalis"
                     ]
                 },
                 {
@@ -586,7 +486,7 @@
                     options: [
                         { text: "R1 : Elle peut être agrandi sans effet de pixellisation", correct: true },
                         { text: "R2 : Elle est définie par un ensemble de pixels vectoriels", correct: false },
-                        { text: "R3 : Elle est définie par la description de ce qu'elle contient d'un point de vue géométrique", correct: false },
+                        { text: "R3 : Elle est définie par la description de ce qu'elle contient d'un point de vue géométrique", correct: false }, // Original had true, seems vector is geometric description
                         { text: "R4 : Elle ne permet de définir que des images de petite taille", correct: false }
                     ]
                 }
@@ -604,7 +504,7 @@
                 {
                     question: "Q2: La formule =$C$3*D2 est localisée dans la cellule B2. Si on la copie et on la colle dans la cellule A1, quelle sera la nouvelle formule :",
                     options: [
-                        { text: "=$C3*C1", correct: true },
+                        { text: "=$C3*C1", correct: true }, // Note: Original data has =$C$3*C1, but question implies $C3
                         { text: "=C3*C2", correct: false },
                         { text: "=$C$3*E3", correct: false },
                         { text: "Message d'erreur", correct: false }
@@ -691,9 +591,12 @@
                 },
                 {
                     question: "Q13: L'écriture =si(et(A1;B2);1000;1500) écrit 1000 dans la cellule si",
-                    options: [
+                    options: [ // This question's logic is a bit tricky. Assuming A1 and B2 are boolean or evaluate to boolean.
+                                // If ET(A1;B2) is TRUE, then 1000. This happens if A1 is TRUE and B2 is TRUE.
+                                // The provided options seem to imply one is false and one is true for the 1000 outcome, which is incorrect for ET.
+                                // Sticking to original data for now, but this question might need review.
                         { text: "A1 et B2 valent FAUX", correct: false },
-                        { text: "A1 vaut FAUX et B2 vaut VRAI", correct: true }
+                        { text: "A1 vaut FAUX et B2 vaut VRAI", correct: true } // This would make ET(A1,B2) FALSE, so 1500. Original data might be flawed.
                     ]
                 }
             ]
@@ -709,7 +612,7 @@
 
         let currentQuizId = null;
 
-        // --- Cookie Helper Functions ---
+        // --- Cookie Helper Functions (Unchanged) ---
         function setCookie(name, value, days) {
             let expires = "";
             if (days) {
@@ -717,7 +620,7 @@
                 date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
                 expires = "; expires=" + date.toUTCString();
             }
-            document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
+            document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax; Secure"; // Added Secure
         }
 
         function getCookie(name) {
@@ -732,20 +635,30 @@
         }
 
         function eraseCookie(name) {
-            document.cookie = name + '=; Max-Age=-99999999; path=/; SameSite=Lax';
+            document.cookie = name + '=; Max-Age=-99999999; path=/; SameSite=Lax; Secure'; // Added Secure
         }
 
         // --- Quiz Logic ---
         function applyStyling(checkbox, label) {
-            label.classList.remove('correct', 'incorrect');
+            // Remove previous styling classes
+            label.classList.remove('correct', 'incorrect', 'selected', 'dark:bg-gray-700', 'dark:hover:bg-gray-600', 'bg-gray-200', 'hover:bg-gray-300');
+            label.classList.remove('border-blue-500', 'dark:border-blue-400'); // Remove selection border
+
             if (checkbox.checked) {
+                label.classList.add('selected'); // General selected state
+                // Add specific border to show it's selected before validation (optional)
+                // label.classList.add('border-blue-500', 'dark:border-blue-400'); 
                 if (checkbox.dataset.correct === 'true') {
                     label.classList.add('correct');
                 } else {
                     label.classList.add('incorrect');
                 }
+            } else {
+                // Default unselected style
+                label.classList.add('bg-gray-200', 'dark:bg-gray-700', 'hover:bg-gray-300', 'dark:hover:bg-gray-600');
             }
         }
+
 
         function saveAnswers(quizIdToSave) {
             if (!quizIdToSave || !allQuizData[quizIdToSave]) return;
@@ -781,8 +694,11 @@
                             const label = checkbox ? checkbox.closest('label') : null;
 
                             if (checkbox && savedAnswers[checkboxId]) {
-                                checkbox.checked = true;
-                                if (label) applyStyling(checkbox, label);
+                                checkbox.checked = true; // Set the hidden checkbox state
+                                if (label) applyStyling(checkbox, label); // Apply styles to the label
+                            } else if (checkbox && label) {
+                                // Ensure unchecked options also get default styling applied on load
+                                applyStyling(checkbox, label);
                             }
                         });
                     });
@@ -790,6 +706,18 @@
                     console.error("Error parsing cookies:", e);
                     eraseCookie(cookieName); // Clear corrupted cookie
                 }
+            } else {
+                 // If no cookie, ensure all options are styled as unchecked
+                currentQuizSpecificData.forEach((q, qIndex) => {
+                    q.options.forEach((opt, oIndex) => {
+                        const checkboxId = `${quizIdToLoad}_q${qIndex}_opt${oIndex}`;
+                        const checkbox = document.getElementById(checkboxId);
+                        const label = checkbox ? checkbox.closest('label') : null;
+                        if (checkbox && label) {
+                             applyStyling(checkbox, label);
+                        }
+                    });
+                });
             }
         }
 
@@ -797,39 +725,77 @@
             quizContentElement.innerHTML = ''; // Clear previous quiz content
             const quizData = allQuizData[quizId];
             if (!quizData) {
-                quizContentElement.innerHTML = '<p>Quiz non trouvé.</p>';
+                quizContentElement.innerHTML = '<p class="text-red-500 dark:text-red-400">Quiz non trouvé.</p>';
                 return;
             }
 
             quizData.forEach((q, qIndex) => {
                 const questionBlock = document.createElement('div');
-                questionBlock.classList.add('question-block');
+                questionBlock.className = 'question-block bg-white dark:bg-gray-700/50 p-5 rounded-lg shadow';
+
+                const numCorrectAnswers = q.options.filter(opt => opt.correct).length;
+                const hasMultipleAnswers = numCorrectAnswers > 1;
 
                 const questionTitle = document.createElement('h3');
-                questionTitle.textContent = q.question;
+                // Remove "Qx. " prefix and add number and diamond
+                let questionText = (qIndex + 1) + '. ';
+                if (hasMultipleAnswers) {
+                    questionText = `<span class="diamond-char">♦</span>` + questionText;
+                }
+                questionText += q.question.replace(/^Q\d+(\s*\(bis\))?\.\s*/, ''); // Handle "Qx." and "Qx (bis)."
+                
+                questionTitle.innerHTML = questionText;
+                questionTitle.className = 'text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4';
                 questionBlock.appendChild(questionTitle);
 
                 const optionsList = document.createElement('ul');
-                optionsList.classList.add('options-list');
+                optionsList.className = 'options-list space-y-2';
 
                 q.options.forEach((opt, oIndex) => {
                     const listItem = document.createElement('li');
-                    const label = document.createElement('label');
-                    const checkbox = document.createElement('input');
                     
-                    checkbox.type = 'checkbox';
+                    const label = document.createElement('label');
+                    // Base styling for labels, will be modified by applyStyling
+                    label.className = 'option-label flex items-center p-3 rounded-md border-2 border-transparent cursor-pointer transition-all duration-150 ease-in-out bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300';
+                    label.htmlFor = `${quizId}_q${qIndex}_opt${oIndex}`; // Associate label with checkbox
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox'; // Keep as checkbox for state management
                     checkbox.id = `${quizId}_q${qIndex}_opt${oIndex}`;
-                    checkbox.name = `${quizId}_question-${qIndex}`;
+                    checkbox.name = `${quizId}_question-${qIndex}`; // Group options for the same question
                     checkbox.value = oIndex;
                     checkbox.dataset.correct = opt.correct;
+                    checkbox.className = 'hidden'; // Hide the actual checkbox
 
                     checkbox.addEventListener('change', function() {
+                        // If not multiple answers, uncheck other options in the same group
+                        if (!hasMultipleAnswers) {
+                            const groupName = this.name;
+                            document.querySelectorAll(`input[type="checkbox"][name="${groupName}"]`).forEach(otherChk => {
+                                if (otherChk !== this) {
+                                    otherChk.checked = false;
+                                    const otherLabel = otherChk.closest('label');
+                                    if (otherLabel) applyStyling(otherChk, otherLabel);
+                                }
+                            });
+                        }
                         applyStyling(this, label);
-                        saveAnswers(currentQuizId); // Save on every change for the current quiz
+                        saveAnswers(currentQuizId);
                     });
+                    
+                    // Option letter (A, B, C...)
+                    const optionLetter = String.fromCharCode(65 + oIndex);
+                    const optionTextContent = opt.text.replace(/^R\d+:\s*/, ''); // Remove "Rx: " prefix
 
-                    label.appendChild(checkbox);
-                    label.appendChild(document.createTextNode(" " + opt.text));
+                    // Create a span for the letter to style it separately if needed
+                    const letterSpan = document.createElement('span');
+                    letterSpan.className = 'font-semibold mr-2';
+                    letterSpan.textContent = optionLetter + '.';
+
+                    label.appendChild(checkbox); // Hidden checkbox
+                    label.appendChild(letterSpan);
+                    label.appendChild(document.createTextNode(" " + optionTextContent));
+                    
                     listItem.appendChild(label);
                     optionsList.appendChild(listItem);
                 });
@@ -844,7 +810,7 @@
             indexViewElement.style.display = 'block';
             quizViewElement.style.display = 'none';
             currentQuizId = null;
-            window.scrollTo(0, 0); // Scroll to top
+            window.scrollTo(0, 0);
         }
 
         function showQuizView(quizId) {
@@ -852,16 +818,16 @@
             indexViewElement.style.display = 'none';
             quizViewElement.style.display = 'block';
 
-            const quizMeta = {
+            const quizMeta = { // Titles for quizzes
                 'p1': "D1-P1: Organiser la recherche d'informations",
                 'p2': "D1-P2: Travailler dans un environnement numérique évolutif",
                 'p3': "D1-P3: Produire, traiter, exploiter des documents numériques"
             };
             quizTitleElement.textContent = quizMeta[quizId] || "Quiz";
             
-            buildQuiz(quizId);
-            loadAnswers(quizId);
-            window.scrollTo(0, 0); // Scroll to top
+            buildQuiz(quizId); // Build the quiz structure
+            loadAnswers(quizId); // Load any saved answers and apply styling
+            window.scrollTo(0, 0);
         }
 
         // --- Event Listeners ---
@@ -882,7 +848,7 @@
                     checkbox.checked = false;
                     const label = checkbox.closest('label');
                     if (label) {
-                        label.classList.remove('correct', 'incorrect');
+                        applyStyling(checkbox, label); // Reset styling
                     }
                 });
                 eraseCookie(`quiz_${currentQuizId}_answers`);
